@@ -44,8 +44,8 @@ class IntentsGraph extends Component {
       <Card className='dash-card'>
         <CardHeader
             style={styles.cardHeaderStyle}
-            title="Intents"
-            subtitle="Which intents are used" />
+            title="Where People Play?"
+            subtitle="What channels people are using to play" />
         <CardMedia style={styles.cardMediaStyle}>
           <ResponsiveContainer>
             <BarChart width={520} height={240} data={intents}

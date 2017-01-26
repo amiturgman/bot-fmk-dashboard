@@ -21,10 +21,14 @@ class IntentActions {
   refresh (timespan) {
 
     var queryspan = timespan == '24 hours' ? 'PT24H' : timespan == '1 week' ? 'P7D' : 'P30D';
-    var query = ` customEvents` + 
-                   ` | extend cslen = customDimensions.callstack_length, intent=customDimensions.intent` +
-                   ` | where name startswith "message.intent" and (cslen == 0 or strlen(cslen) == 0) and strlen(intent) > 0` +
-                   ` | summarize event_count=count() by tostring(intent)`;
+    // var query = ` customEvents` + 
+    //                ` | extend cslen = customDimensions.callstack_length, intent=customDimensions.intent` +
+    //                ` | where name startswith "message.intent" and (cslen == 0 or strlen(cslen) == 0) and strlen(intent) > 0` +
+    //                ` | summarize event_count=count() by tostring(intent)`;
+    var query = `customEvents ` +
+                  `| where name == "custom-play" ` +
+                  `| extend cnt=todouble(customMeasurements['count']), channel=tostring(customDimensions.channel)` +
+                  `| summarize event_count=sum(cnt) by channel, name`;
     var url = `${common.appInsights.uri}/${appInsightsAppId}/query?timespan=${queryspan}&query=${encodeURIComponent(query)}`;
 
     return (dispatch) => {
@@ -38,8 +42,9 @@ class IntentActions {
         
         var _intents = [];
         json.Tables[0].Rows.forEach(row => {
-          var intent = row[0] || 'Unknown';
-          var count = row[1] || 0;
+          var intent = row[0] || 'Unknown'; // channel
+          var event_name = row[1] || 'Unknown';
+          var count = row[2] || 0;
           
           _intents.push({ intent, count });
         });

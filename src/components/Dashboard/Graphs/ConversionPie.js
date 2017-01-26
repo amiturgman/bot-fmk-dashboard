@@ -22,6 +22,13 @@ class ConversionsPie extends Component {
     return ConversionStore.getState();
   }
 
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      activeIndex: 0
+    };
+  }
   
   renderActiveShape = (props) => {
     const { mode } = this.props;
@@ -84,45 +91,38 @@ class ConversionsPie extends Component {
       </g>
     );
   };
+
+  onPieEnter(data, index) {
+    this.setState({ activeIndex: index });
+  }
   
   render() {
     const { conversions } = this.props;
-
-    var total = _.find(conversions, { name: 'message.convert.start' });
-    var successful = _.find(conversions, { name: 'message.convert.end', successful: true }) || { event_count: 0 };
-
-    if (!total) {
-      return null;
-    }
-
-    var values = [
-      { name: 'Successful', value: successful.event_count },
-      { name: 'Failed', value: total.event_count - successful.event_count },
-    ];
 
     // Todo: Receive the width of the SVG component from the container
     return (
       <Card className='dash-card'>
         <CardHeader
             className='card-header'
-            title="Conversion Usage"
-            subtitle={`Conversion Rate`} />
+            title="Action Types"
+            subtitle={`Which actions are being used`} />
         <CardMedia style={styles.cardMediaStyle}>
           <PieChart width={500} height={240}>
             <Pie
-              data={values} 
-              cx={270} 
+              data={conversions} 
+              onMouseEnter={this.onPieEnter.bind(this)}
+              cx={150} 
               cy={120} 
               innerRadius={60}
               outerRadius={80} 
               fill="#8884d8"
-              activeIndex={0}
+              activeIndex={this.state.activeIndex}
               activeShape={this.renderActiveShape.bind(this)} 
               paddingAngle={0}>
-              <Cell key={0} fill={colors.GoodColor}/>
-              <Cell key={1} fill={colors.BadColor}/>
+              {conversions.map((val, idx) => <Cell key={idx} fill={ThemeColors[idx]} />)}
+              <Tooltip/>
             </Pie>
-            <Legend wrapperStyle={{ marginLeft: 70 }} />
+            <Legend layout='vertical' align='right' wrapperStyle={{ top: 10, right: 11 }} />
           </PieChart>
         </CardMedia>
       </Card>

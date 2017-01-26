@@ -15,13 +15,16 @@ class ConversionActions {
 
     return (dispatch) => {
 
-      var query = ` customEvents` +
-        ` | extend successful=customDimensions.successful` +
-        ` | where name startswith 'message.convert'` +
-        ` | summarize event_count=count() by name, tostring(successful)`;
+      // var query = ` customEvents` +
+      //   ` | extend successful=customDimensions.successful` +
+      //   ` | where name startswith 'message.convert'` +
+      //   ` | summarize event_count=count() by name, tostring(successful)`;
+      var query = `customEvents ` +
+                    `| where name startswith "custom-" ` +
+                    `| extend  cnt=todouble(customMeasurements['count'])` +
+                    `| summarize count=sum(cnt) by name`;
       var mappings = [
         { key: 'name' },
-        { key: 'successful', val: (val) => val === 'true' },
         { key: 'event_count', def: 0 }
       ];
 
@@ -30,6 +33,7 @@ class ConversionActions {
           return this.refreshFail(error)
         }
 
+        conversions = conversions.map((conv) => { return { name: conv.name.replace('custom-', ''), value: conv.event_count }})
         return dispatch({ conversions, timespan });
       });
     }
